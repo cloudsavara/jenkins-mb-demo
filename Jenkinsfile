@@ -120,7 +120,7 @@ aws_secret_access_key=${AWS_SECRET_ACCESS_KEY}"""
                         sh 'kubectl delete ns prometheus'
                         sh "terraform workspace select ${type}"
                         plan = "${type}_"+ params.cluster_name + '.plan'
-                        sh "terraform destroy --auto-approve ${plan}"
+                        sh "terraform destroy --auto-approve"
                         sh "terraform workspace delete ${type}"
                     }                    
                 }                
