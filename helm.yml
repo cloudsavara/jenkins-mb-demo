@@ -30,6 +30,7 @@
         name: prometheus
         chart_ref: promotheus-stable-repo/prometheus
         release_namespace: prometheus
+        kubeconfig: {{ config }}
         create_namespace: true
         values:
           persistence:
@@ -41,6 +42,7 @@
         chart_ref: grafana-stable-repo/grafana
         release_namespace: grafana
         create_namespace: true
+        kubeconfig: {{ config }}
         values:
           replicas: 2
           adminPassword: 'welcome'
