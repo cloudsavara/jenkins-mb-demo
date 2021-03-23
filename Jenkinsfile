@@ -83,7 +83,7 @@ aws_secret_access_key=${AWS_SECRET_ACCESS_KEY}"""
             when { expression { params.action == 'create' } }
             steps {
                 script {
-                    for (int i = 0; i <= eksEnvs.length; i++){
+                    for (int i = 0; i <= eksEnvs.size(); i++){
                         sh 'terraform init'
                         sh "terraform workspace new ${eksEnvs[i]}"
                         plan = "${eksEnvs[i]}_"+ params.cluster_name + '.plan'
