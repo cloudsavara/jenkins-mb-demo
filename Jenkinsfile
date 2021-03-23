@@ -85,10 +85,9 @@ aws_secret_access_key=${AWS_SECRET_ACCESS_KEY}"""
                 script {
                     for (int i = 0; i <= eksEnvs.size(); i++){
                         sh 'terraform init'
-                        sh "terraform workspace new ${i}"
-                        plan = "${i}_"+ params.cluster_name + '.plan'
-                        sh "terraform plan -out=${plan} -var env=${i}"
-                        sh "terraform apply ${plan}"
+                      sh "terraform workspace new ${eksEnvs{i}}"
+                        plan = " ${eksEnvs{i}}_"+ params.cluster_name + '.plan'
+                        sh "terraform plan -out=${plan} -var env=${eksEnvs{i}}"
                     }
                 }
             }
@@ -116,7 +115,7 @@ aws_secret_access_key=${AWS_SECRET_ACCESS_KEY}"""
                     for (int i = 0; i <= eksEnvs.size(); i++){
                         sh "terraform workspace select ${i}"
                         plan = "${i}_"+ params.cluster_name + '.plan'
-                        sh "terraform destroy ${plan}"
+                        sh "terraform destroy --auto-approve ${plan}"
                     }                    
                 }                
             }
