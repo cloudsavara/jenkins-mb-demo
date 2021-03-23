@@ -83,7 +83,7 @@ aws_secret_access_key=${AWS_SECRET_ACCESS_KEY}"""
             when { expression { params.action == 'create' } }
             steps {
                 script {
-                    for (int i = 0; i <= eksEnvs.size(); i++){
+                    for (int i = 0; i < eksEnvs.size(); i++){
                         sh 'terraform init'
                       sh "terraform workspace new ${eksEnvs{i}}"
                         plan = " ${eksEnvs{i}}_"+ params.cluster_name + '.plan'
@@ -112,7 +112,7 @@ aws_secret_access_key=${AWS_SECRET_ACCESS_KEY}"""
                 script {
                     sh 'kubectl delete ns grafana'
                     sh 'kubectl delete ns prometheus'
-                    for (int i = 0; i <= eksEnvs.size(); i++){
+                    for (int i = 0; i < eksEnvs.size(); i++){
                         sh "terraform workspace select ${i}"
                         plan = "${i}_"+ params.cluster_name + '.plan'
                         sh "terraform destroy --auto-approve ${plan}"
