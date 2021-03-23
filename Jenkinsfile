@@ -1,7 +1,3 @@
-def getEnv(){
-  return ['dev', 'qa', 'prod']
-}
-
 pipeline {
     parameters {
         choice(name: 'action', choices: 'create\ndestroy', description: 'Action to create AWS EKS cluster')        
@@ -12,7 +8,7 @@ pipeline {
     agent any
     environment {
         VAULT_TOKEN = credentials('vault_token')
-        eksEnvs = getEnv()
+        eksEnvs = "dev,qa,prod"
     }
 
     stages {
@@ -83,11 +79,12 @@ aws_secret_access_key=${AWS_SECRET_ACCESS_KEY}"""
             when { expression { params.action == 'create' } }
             steps {
                 script {
-                    for (int i = 0; i < eksEnvs.size(); i++){
+                    def env = eksEnvs.split(',')
+                    for (type in env){
                         sh 'terraform init'
-                      sh "terraform workspace new ${eksEnvs{i}}"
-                        plan = " ${eksEnvs{i}}_"+ params.cluster_name + '.plan'
-                        sh "terraform plan -out=${plan} -var env=${eksEnvs{i}}"
+                        sh "terraform workspace new ${type}"
+                        plan = "${type}_"+ params.cluster_name + '.plan'
+                        sh "terraform plan -out=${plan} -var env=${type}"
                     }
                 }
             }
@@ -96,13 +93,20 @@ aws_secret_access_key=${AWS_SECRET_ACCESS_KEY}"""
             when { expression { params.action == 'create' } }
             steps {
                 script {
-                    echo 'Deploying promethus and grafana using Ansible playbooks and Helm chars'
-                    sh 'ansible-galaxy collection install -r requirements.yml'
-                    sh 'ansible-playbook helm.yml --user jenkins'
-                    sh 'sleep 20'
-                    sh 'kubectl get all -n grafana'
-                    sh 'kubectl get all -n prometheus'
-                    sh 'export ELB=$(kubectl get svc -n grafana grafana -o jsonpath="{.status.loadBalancer.ingress[0].hostname}")'
+                    def env = eksEnvs.split(',')
+                    for (type in env){
+                        sh 'terraform init'
+                        sh "terraform workspace new ${type}"
+                        plan = "${type}_"+ params.cluster_name + '.plan'
+                        sh "terraform plan -out=${plan} -var env=${type}"
+                        echo "Deploying promethus and grafana using Ansible playbooks and Helm chars on ${type} environment"
+                        sh 'ansible-galaxy collection install -r requirements.yml'
+                        sh 'ansible-playbook helm.yml --user jenkins'
+                        sh 'sleep 20'
+                        sh 'kubectl get all -n grafana'
+                        sh 'kubectl get all -n prometheus'
+                        sh 'export ELB=$(kubectl get svc -n grafana grafana -o jsonpath="{.status.loadBalancer.ingress[0].hostname}")'
+                    }
                 }
             }
         }
@@ -110,11 +114,12 @@ aws_secret_access_key=${AWS_SECRET_ACCESS_KEY}"""
             when { expression { params.action == 'destroy' } }
             steps {
                 script {
-                    sh 'kubectl delete ns grafana'
-                    sh 'kubectl delete ns prometheus'
-                    for (int i = 0; i < eksEnvs.size(); i++){
-                        sh "terraform workspace select ${i}"
-                        plan = "${i}_"+ params.cluster_name + '.plan'
+                    def env = eksEnvs.split(',')
+                    for (type in env){
+                        sh 'kubectl delete ns grafana'
+                        sh 'kubectl delete ns prometheus'
+                        sh "terraform workspace select ${type}"
+                        plan = "${type}_"+ params.cluster_name + '.plan'
                         sh "terraform destroy --auto-approve ${plan}"
                     }                    
                 }                
