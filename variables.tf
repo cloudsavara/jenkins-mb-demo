@@ -3,6 +3,19 @@ variable "aws_region" {
 }
 
 variable "cluster-name" {
-  default = "aws-eks-demo-cluster"
+  default = "eks-cluster"
   type    = string
+}
+
+variable "workspace_to_environment_map" {
+  type = map
+  default = {
+    dev     = "dev"
+    qa      = "qa"
+    prod    = "prod"
+  }
+}
+
+variable "env" {
+  description = "env: dev/qa/prod"
 }
