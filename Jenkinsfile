@@ -85,6 +85,7 @@ aws_secret_access_key=${AWS_SECRET_ACCESS_KEY}"""
                         sh "terraform workspace new ${type}"
                         plan = "${type}_"+ params.cluster_name + '.plan'
                         sh "terraform plan -out=${plan} -var env=${type}"
+                        sh "terraform apply ${plan}"
                     }
                 }
             }
