@@ -7,7 +7,7 @@ pipeline {
     agent any
     environment {
         VAULT_TOKEN = credentials('vault_token')
-        ENV = ['dev','qa','prod']
+        ENV = 'dev','qa','prod'
     }
 
     stages {
