@@ -96,12 +96,11 @@ aws_secret_access_key=${AWS_SECRET_ACCESS_KEY}"""
                 script {
                     def env = eksEnvs.split(',')
                     for (type in env){
-                        sh 'terraform init'
-                        sh "terraform workspace new ${type}"
-                        plan = "${type}_"+ params.cluster_name + '.plan'
-                        sh "terraform plan -out=${plan} -var env=${type}"
+                        sh "terraform workspace select ${type}"
+                        sh "terraform output -raw kubeconfig > $HOME/.kube/${type}config"
                         echo "Deploying promethus and grafana using Ansible playbooks and Helm chars on ${type} environment"
                         sh 'ansible-galaxy collection install -r requirements.yml'
+                        sh "export KUBECONFIG=$HOME/.kube/${type}config"
                         sh 'ansible-playbook helm.yml --user jenkins'
                         sh 'sleep 20'
                         sh 'kubectl get all -n grafana'
@@ -122,6 +121,7 @@ aws_secret_access_key=${AWS_SECRET_ACCESS_KEY}"""
                         sh "terraform workspace select ${type}"
                         plan = "${type}_"+ params.cluster_name + '.plan'
                         sh "terraform destroy --auto-approve ${plan}"
+                        sh "terraform workspace delete ${type}"
                     }                    
                 }                
             }
