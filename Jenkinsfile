@@ -1,3 +1,7 @@
+def getEnv(){
+  return ['dev', 'qa', 'prod']
+}
+
 pipeline {
     parameters {
         choice(name: 'action', choices: 'create\ndestroy', description: 'Action to create AWS EKS cluster')        
@@ -7,7 +11,7 @@ pipeline {
     agent any
     environment {
         VAULT_TOKEN = credentials('vault_token')
-        ENV = ["dev","qa","prod"]
+        eksEnvs = getEnv()
     }
 
     stages {
@@ -78,11 +82,11 @@ aws_secret_access_key=${AWS_SECRET_ACCESS_KEY}"""
             when { expression { params.action == 'create' } }
             steps {
                 script {
-                    for (int i = 0; i <= ENV.length; i++){
+                    for (int i = 0; i <= eksEnvs.length; i++){
                         sh 'terraform init'
-                        sh "terraform workspace new ${ENV[i]}"
-                        plan = "${ENV[i]}_"+ params.cluster_name + '.plan'
-                        sh "terraform plan -out=${plan} -var env=${ENV[i]}"
+                        sh "terraform workspace new ${eksEnvs[i]}"
+                        plan = "${eksEnvs[i]}_"+ params.cluster_name + '.plan'
+                        sh "terraform plan -out=${plan} -var env=${eksEnvs[i]}"
                         sh "terraform apply ${plan}"
                     }
                 }
@@ -108,9 +112,9 @@ aws_secret_access_key=${AWS_SECRET_ACCESS_KEY}"""
                 script {
                     sh 'kubectl delete ns grafana'
                     sh 'kubectl delete ns prometheus'
-                    for (int i = 0; i <= ENV.length; i++){
-                        sh "terraform workspace select ${ENV[i]}"
-                        plan = "${ENV[i]}_"+ params.cluster_name + '.plan'
+                    for (int i = 0; i <= eksEnvs.length; i++){
+                        sh "terraform workspace select ${eksEnvs[i]}"
+                        plan = "${eksEnvs[i]}_"+ params.cluster_name + '.plan'
                         sh "terraform destroy ${plan}"
                     }                    
                 }                
