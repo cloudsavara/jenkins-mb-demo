@@ -31,7 +31,6 @@
         chart_ref: promotheus-stable-repo/prometheus
         release_namespace: prometheus
         create_namespace: true
-        kubeconfig: /var/lib/jenkins/.kube/config
         values:
           persistence:
             storageClassName: "gp2"
@@ -42,7 +41,6 @@
         chart_ref: grafana-stable-repo/grafana
         release_namespace: grafana
         create_namespace: true
-        kubeconfig: /var/lib/jenkins/.kube/config
         values:
           replicas: 2
           adminPassword: 'welcome'
