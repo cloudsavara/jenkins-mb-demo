@@ -37,7 +37,7 @@ pipeline {
             when { expression { params.action == 'create' } }
             steps {
                 script {
-                    currentBuild.displayName = "#" + " " + params.action + "-eks-" + params.cluster_name
+                    currentBuild.displayName = "#" + env.BUILD_ID + " " + params.action + "-eks-" + params.cluster_name
                     plan = params.cluster_name + '.plan'
                     TF_VERSION = params.terraform_version
                 }
