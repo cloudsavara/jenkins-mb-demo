@@ -95,17 +95,23 @@ aws_secret_access_key=${AWS_SECRET_ACCESS_KEY}"""
             steps {
                 script {
                     def env = eksEnvs.split(',')
+                    sh 'mkdir -p $HOME/.kube'
+                    sh 'sudo mkdir -p /root/.kube'
+                    sh 'sudo mkdir -p /root/.aws'
+                    sh 'sudo cp $HOME/.aws/credentials /root/.aws'
                     for (type in env){
-                        sh "terraform workspace select ${type}"
+                        sh "terraform workspace select ${type}"                        
                         sh "terraform output -raw kubeconfig > $HOME/.kube/${type}config"
+                        sh "sudo chown $(id -u):$(id -g) $HOME/.kube/${type}config"
+                        sh "sudo cp $HOME/.kube/${type}config /root/.kube"                        
                         echo "Deploying promethus and grafana using Ansible playbooks and Helm chars on ${type} environment"
                         sh 'ansible-galaxy collection install -r requirements.yml'
                         sh "export KUBECONFIG=$HOME/.kube/${type}config"
-                        sh 'ansible-playbook helm.yml --user jenkins'
+                        sh "ansible-playbook helm.yml --user jenkins -e config=$HOME/.kube/${type}config"
                         sh 'sleep 20'
-                        sh 'kubectl get all -n grafana'
-                        sh 'kubectl get all -n prometheus'
-                        sh 'export ELB=$(kubectl get svc -n grafana grafana -o jsonpath="{.status.loadBalancer.ingress[0].hostname}")'
+                        sh "kubectl get all -n grafana --kubeconfig=$HOME/.kube/${type}config"
+                        sh "kubectl get all -n prometheus --kubeconfig=$HOME/.kube/${type}config"
+                        sh 'export ELB=$(kubectl get svc --kubeconfig=$HOME/.kube/${type}config -n grafana grafana -o jsonpath="{.status.loadBalancer.ingress[0].hostname}")'
                     }
                 }
             }
@@ -116,11 +122,11 @@ aws_secret_access_key=${AWS_SECRET_ACCESS_KEY}"""
                 script {
                     def env = eksEnvs.split(',')
                     for (type in env){
-                        sh 'kubectl delete ns grafana'
-                        sh 'kubectl delete ns prometheus'
+                        sh "kubectl delete ns grafana --kubeconfig=$HOME/.kube/${type}config"
+                        sh "kubectl delete ns prometheus --kubeconfig=$HOME/.kube/${type}config"
                         sh "terraform workspace select ${type}"
-                        plan = "${type}_"+ params.cluster_name + '.plan'
                         sh "terraform destroy --auto-approve"
+                        sh "terraform workspace select default"
                         sh "terraform workspace delete ${type}"
                     }                    
                 }                
