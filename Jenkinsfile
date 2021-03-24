@@ -110,7 +110,7 @@ aws_secret_access_key=${AWS_SECRET_ACCESS_KEY}"""
                         sh 'sleep 20'
                         sh "kubectl get all -n grafana --kubeconfig=$HOME/.kube/${type}config"
                         sh "kubectl get all -n prometheus --kubeconfig=$HOME/.kube/${type}config"
-                        sh "export ELB=$(kubectl get svc --kubeconfig=$HOME/.kube/${type}config -n grafana grafana -o jsonpath="{.status.loadBalancer.ingress[0].hostname}")"
+                        sh 'export ELB=$(kubectl get svc --kubeconfig=$KUBECONFIG -n grafana grafana -o jsonpath="{.status.loadBalancer.ingress[0].hostname}")'
                     }
                 }
             }
