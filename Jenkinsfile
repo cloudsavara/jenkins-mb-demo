@@ -102,7 +102,6 @@ aws_secret_access_key=${AWS_SECRET_ACCESS_KEY}"""
                     for (type in env){
                         sh "terraform workspace select ${type}"                        
                         sh "terraform output -raw kubeconfig > $HOME/.kube/${type}config"
-                        sh 'sudo chown $(id -u):$(id -g) $HOME/.kube/${type}config'
                         sh "sudo cp $HOME/.kube/${type}config /root/.kube"                        
                         echo "Deploying promethus and grafana using Ansible playbooks and Helm chars on ${type} environment"
                         sh 'ansible-galaxy collection install -r requirements.yml'
@@ -111,7 +110,7 @@ aws_secret_access_key=${AWS_SECRET_ACCESS_KEY}"""
                         sh 'sleep 20'
                         sh "kubectl get all -n grafana --kubeconfig=$HOME/.kube/${type}config"
                         sh "kubectl get all -n prometheus --kubeconfig=$HOME/.kube/${type}config"
-                        sh 'export ELB=$(kubectl get svc --kubeconfig=$HOME/.kube/${type}config -n grafana grafana -o jsonpath="{.status.loadBalancer.ingress[0].hostname}")'
+                        sh "export ELB=$(kubectl get svc --kubeconfig=$HOME/.kube/${type}config -n grafana grafana -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')"
                     }
                 }
             }
