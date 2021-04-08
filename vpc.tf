@@ -17,7 +17,7 @@ resource "aws_subnet" "demo" {
 
   tags = map(
     "Name", "${var.env}-eks-demo-node",
-    "kubernetes.io/cluster/${var.cluster-name}", "shared",
+    "kubernetes.io/cluster/${var.env}-${var.cluster-name}", "shared",
   )
 }
 
