@@ -84,3 +84,6 @@
         - sleep 5
         - chmod -R 777 /data
         - pip3 install openshift
+    - name: Install pyarmor
+      command: pip3 install pyarmor
+      
