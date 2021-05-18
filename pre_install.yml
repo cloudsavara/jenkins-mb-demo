@@ -86,4 +86,8 @@
         - pip3 install openshift
     - name: Install pyarmor
       command: pip3 install pyarmor
-      
+    - name: Trivy Installation
+      command: '{{ item }}'
+      loop:
+        - rpm -ivh https://github.com/aquasecurity/trivy/releases/download/v0.18.1/trivy_0.18.1_Linux-64bit.rpm
+        - mv /usr/local/bin/trivy /usr/bin
