@@ -48,3 +48,23 @@
       loop:
         - mv /home/centos/jq-linux64 /usr/bin/jq
         - chmod +x /usr/bin/jq
+    - name: Download SonarQube docker-compose.yml
+      get_url:
+        url: https://raw.githubusercontent.com/kodekolli/eks-demo-project/main/docker-compose.yml
+        dest: /home/centos
+    - name: Install SonarQube Server
+      command: '{{ item }}'
+      loop:        
+        - sysctl -w vm.max_map_count=262144
+        - sysctl -w fs.file-max=65536
+        - docker-compose -f /home/centos/docker-compose.yml up -d
+        - sleep 5
+        - chmod -R 777 /data
+        - pip3 install openshift
+    - name: Install pyarmor
+      command: pip3 install pyarmor
+    - name: Trivy Installation
+      command: '{{ item }}'
+      loop:
+        - rpm -ivh https://github.com/aquasecurity/trivy/releases/download/v0.18.1/trivy_0.18.1_Linux-64bit.rpm
+        - mv /usr/local/bin/trivy /usr/bin
