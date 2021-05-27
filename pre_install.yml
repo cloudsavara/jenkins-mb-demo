@@ -85,7 +85,10 @@
         - chmod -R 777 /data
         - pip3 install openshift
     - name: Install pyarmor
-      command: pip3 install pyarmor
+      command: '{{ item }}'
+      loop:
+        - pip3 install pyarmor
+        - mv /usr/local/bin/pyarmor /usr/bin
     - name: Trivy Installation
       command: '{{ item }}'
       loop:
