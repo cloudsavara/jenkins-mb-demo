@@ -121,8 +121,8 @@ aws_secret_access_key=${AWS_SECRET_ACCESS_KEY}"""
                 script {
                     def env = eksEnvs.split(',')
                     for (type in env){
-                        sh "kubectl delete ns grafana --kubeconfig=$HOME/.kube/${type}config"
-                        sh "kubectl delete ns prometheus --kubeconfig=$HOME/.kube/${type}config"
+                        sh "kubectl delete ns grafana --kubeconfig=$HOME/.kube/${type}config || true"
+                        sh "kubectl delete ns prometheus --kubeconfig=$HOME/.kube/${type}config || true"
                         sh "terraform workspace select ${type}"
                         sh "terraform destroy --auto-approve"
                         sh "terraform workspace select default"
